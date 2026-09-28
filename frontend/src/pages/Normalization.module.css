@@ -1,0 +1,127 @@
+.container {
+  display: flex;
+  flex-direction: column;
+  gap: var(--spacing-6);
+  max-width: 1000px;
+  margin: 0 auto;
+}
+
+.header {
+  display: flex;
+  flex-direction: column;
+  gap: var(--spacing-1);
+  margin-bottom: var(--spacing-4);
+}
+
+.title {
+  font-size: 1.5rem;
+  font-weight: 700;
+  color: var(--color-primary);
+}
+
+.subtitle {
+  font-size: 0.875rem;
+  color: var(--color-text-secondary);
+}
+
+.card {
+  background-color: var(--color-surface);
+  border: 1px solid var(--color-border);
+  border-radius: var(--radius-lg);
+  padding: var(--spacing-6);
+  box-shadow: var(--shadow-sm);
+}
+
+.comparisonSection {
+  display: grid;
+  grid-template-columns: 1fr 40px 1fr;
+  gap: var(--spacing-4);
+  align-items: center;
+  margin-bottom: var(--spacing-8);
+}
+
+.valueBox {
+  background-color: var(--color-background);
+  border: 1px solid var(--color-border);
+  border-radius: var(--radius-md);
+  padding: var(--spacing-4);
+  display: flex;
+  flex-direction: column;
+  gap: var(--spacing-2);
+}
+
+.valueBox.normalized {
+  border-color: var(--color-success);
+  background-color: var(--color-success-bg);
+}
+
+.valueLabel {
+  font-size: 0.75rem;
+  font-weight: 600;
+  text-transform: uppercase;
+  color: var(--color-text-secondary);
+}
+
+.normalized .valueLabel {
+  color: var(--color-success);
+}
+
+.valueText {
+  font-size: 1.125rem;
+  font-weight: 600;
+  color: var(--color-primary);
+}
+
+.arrow {
+  display: flex;
+  justify-content: center;
+  color: var(--color-text-secondary);
+}
+
+.sectionTitle {
+  font-size: 1.125rem;
+  font-weight: 600;
+  color: var(--color-primary);
+  margin-bottom: var(--spacing-4);
+  border-bottom: 1px solid var(--color-border);
+  padding-bottom: var(--spacing-3);
+}
+
+.transformTable {
+  width: 100%;
+  border-collapse: collapse;
+}
+
+.transformTable th, .transformTable td {
+  padding: var(--spacing-3);
+  border-bottom: 1px solid var(--color-border);
+  text-align: left;
+  font-size: 0.875rem;
+}
+
+.transformTable th {
+  background-color: var(--color-background);
+  font-weight: 600;
+  color: var(--color-text-secondary);
+}
+
+.confidenceHigh {
+  color: var(--color-success);
+  font-weight: 600;
+}
+
+.confidenceMed {
+  color: var(--color-warning);
+  font-weight: 600;
+}
+
+.originalText {
+  color: var(--color-danger);
+  text-decoration: line-through;
+  margin-right: var(--spacing-2);
+}
+
+.newText {
+  color: var(--color-success);
+  font-weight: 500;
+}
