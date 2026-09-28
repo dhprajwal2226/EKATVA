@@ -1,0 +1,46 @@
+version: '3.8'
+
+services:
+  postgres:
+    image: pgvector/pgvector:pg16
+    container_name: ekatva_postgres
+    restart: always
+    environment:
+      POSTGRES_USER: postgres
+      POSTGRES_PASSWORD: postgrespassword
+      POSTGRES_DB: ekatva_db
+    ports:
+      - "5432:5432"
+    volumes:
+      - pgdata:/var/lib/postgresql/data
+    healthcheck:
+      test: ["CMD-SHELL", "pg_isready -U postgres"]
+      interval: 5s
+      timeout: 5s
+      retries: 5
+
+  core_ai_engine:
+    build:
+      context: ./backend
+      dockerfile: Dockerfile
+    container_name: ekatva_core_ai
+    restart: always
+    depends_on:
+      postgres:
+        condition: service_healthy
+    environment:
+      DATABASE_URL: "postgresql+psycopg2://postgres:postgrespassword@postgres:5432/ekatva_db"
+      DB_ECHO: "false"
+      SEMANTIC_WEIGHT: "0.30"
+      FUZZY_WEIGHT: "0.20"
+      ATTRIBUTE_WEIGHT: "0.30"
+      TECHNICAL_WEIGHT: "0.20"
+      CANDIDATE_TOP_K: "25"
+      CRITICAL_CONFLICT_BEHAVIOR: "DO_NOT_AUTO_MERGE"
+    ports:
+      - "8000:8000"
+    volumes:
+      - ./backend:/app
+
+volumes:
+  pgdata:
