@@ -1,0 +1,68 @@
+.sidebar {
+  width: 280px;
+  background-color: var(--color-primary);
+  color: var(--color-text-inverse);
+  display: flex;
+  flex-direction: column;
+  border-right: 1px solid var(--color-primary-light);
+  transition: var(--transition-normal);
+}
+
+.logoContainer {
+  padding: var(--spacing-6);
+  border-bottom: 1px solid var(--color-primary-light);
+}
+
+.logoTitle {
+  font-size: 1.1rem;
+  font-weight: 700;
+  letter-spacing: 0.5px;
+  margin-bottom: var(--spacing-1);
+}
+
+.logoSubtitle {
+  font-size: 0.75rem;
+  color: var(--color-text-secondary);
+  text-transform: uppercase;
+  letter-spacing: 1px;
+}
+
+.nav {
+  flex: 1;
+  overflow-y: auto;
+  padding: var(--spacing-4) 0;
+}
+
+.navList {
+  display: flex;
+  flex-direction: column;
+  gap: var(--spacing-1);
+  padding: 0 var(--spacing-3);
+}
+
+.navItem {
+  display: flex;
+  align-items: center;
+  gap: var(--spacing-3);
+  padding: var(--spacing-3) var(--spacing-4);
+  border-radius: var(--radius-md);
+  color: var(--color-border-dark);
+  font-size: 0.875rem;
+  font-weight: 500;
+  transition: var(--transition-fast);
+}
+
+.navItem:hover {
+  background-color: var(--color-primary-light);
+  color: var(--color-text-inverse);
+}
+
+.navItem.active {
+  background-color: var(--color-info);
+  color: var(--color-text-inverse);
+}
+
+.icon {
+  width: 18px;
+  height: 18px;
+}

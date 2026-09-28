@@ -1,0 +1,198 @@
+.ingestionContainer {
+  display: flex;
+  flex-direction: column;
+  gap: var(--spacing-6);
+  max-width: 1000px;
+  margin: 0 auto;
+}
+
+.header {
+  display: flex;
+  flex-direction: column;
+  gap: var(--spacing-1);
+  margin-bottom: var(--spacing-4);
+}
+
+.title {
+  font-size: 1.5rem;
+  font-weight: 700;
+  color: var(--color-primary);
+}
+
+.subtitle {
+  font-size: 0.875rem;
+  color: var(--color-text-secondary);
+}
+
+.card {
+  background-color: var(--color-surface);
+  border: 1px solid var(--color-border);
+  border-radius: var(--radius-lg);
+  padding: var(--spacing-6);
+  box-shadow: var(--shadow-sm);
+}
+
+.formGroup {
+  margin-bottom: var(--spacing-5);
+}
+
+.label {
+  display: block;
+  font-size: 0.875rem;
+  font-weight: 600;
+  color: var(--color-text);
+  margin-bottom: var(--spacing-2);
+}
+
+.select {
+  width: 100%;
+  max-width: 400px;
+  padding: 10px 14px;
+  border: 1px solid var(--color-border-dark);
+  border-radius: var(--radius-md);
+  font-size: 0.875rem;
+  font-family: inherit;
+  background-color: var(--color-surface);
+}
+
+.uploadZone {
+  border: 2px dashed var(--color-info);
+  border-radius: var(--radius-lg);
+  padding: var(--spacing-8);
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+  justify-content: center;
+  text-align: center;
+  background-color: var(--color-info-bg);
+  cursor: pointer;
+  transition: var(--transition-fast);
+  margin-top: var(--spacing-4);
+}
+
+.uploadZone:hover {
+  background-color: #e0f2fe;
+}
+
+.uploadIcon {
+  width: 48px;
+  height: 48px;
+  color: var(--color-info);
+  margin-bottom: var(--spacing-4);
+}
+
+.uploadTitle {
+  font-size: 1.125rem;
+  font-weight: 600;
+  color: var(--color-primary);
+  margin-bottom: var(--spacing-2);
+}
+
+.uploadSubtitle {
+  font-size: 0.875rem;
+  color: var(--color-text-secondary);
+  margin-bottom: var(--spacing-4);
+}
+
+.supportedFields {
+  display: flex;
+  flex-wrap: wrap;
+  gap: var(--spacing-2);
+  justify-content: center;
+  margin-top: var(--spacing-4);
+}
+
+.fieldChip {
+  background-color: var(--color-surface);
+  border: 1px solid var(--color-border);
+  padding: 4px 12px;
+  border-radius: 16px;
+  font-size: 0.75rem;
+  color: var(--color-text-secondary);
+}
+
+.stepsContainer {
+  margin-top: var(--spacing-8);
+  display: flex;
+  flex-direction: column;
+  gap: var(--spacing-4);
+}
+
+.step {
+  display: flex;
+  align-items: center;
+  gap: var(--spacing-4);
+  padding: var(--spacing-4);
+  background-color: var(--color-background);
+  border-radius: var(--radius-md);
+  border: 1px solid var(--color-border);
+}
+
+.step.active {
+  border-color: var(--color-info);
+  background-color: var(--color-info-bg);
+}
+
+.step.completed {
+  border-color: var(--color-success);
+  background-color: var(--color-success-bg);
+}
+
+.stepIcon {
+  width: 24px;
+  height: 24px;
+}
+
+.active .stepIcon {
+  color: var(--color-info);
+}
+
+.completed .stepIcon {
+  color: var(--color-success);
+}
+
+.stepContent {
+  flex: 1;
+}
+
+.stepTitle {
+  font-weight: 600;
+  font-size: 0.875rem;
+  color: var(--color-text);
+}
+
+.stepDesc {
+  font-size: 0.75rem;
+  color: var(--color-text-secondary);
+}
+
+.stepStatus {
+  font-size: 0.75rem;
+  font-weight: 600;
+}
+
+.active .stepStatus {
+  color: var(--color-info);
+}
+
+.completed .stepStatus {
+  color: var(--color-success);
+}
+
+.previewTable {
+  margin-top: var(--spacing-6);
+  width: 100%;
+  border-collapse: collapse;
+}
+
+.previewTable th, .previewTable td {
+  padding: var(--spacing-3);
+  border: 1px solid var(--color-border);
+  font-size: 0.75rem;
+  text-align: left;
+}
+
+.previewTable th {
+  background-color: var(--color-background);
+  font-weight: 600;
+}
