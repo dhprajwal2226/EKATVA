@@ -10,12 +10,19 @@ from fastapi.middleware.cors import CORSMiddleware
 from app.core.config import settings
 from app.api import api_router
 from app.db.seed import init_db
+from app.db.init_db import init_db as init_decision_support_db
+from app.api.passport import router as passport_router
+from app.api.analytics import router as analytics_router
+from app.api.copilot import router as copilot_router
+from app.api.export import router as export_router
+from app.api.integration import router as integration_router
 
 
 @asynccontextmanager
 async def lifespan(app: FastAPI):
     # Startup: Ensure database tables exist and seed baseline CPSE records
     init_db()
+    init_decision_support_db()
     yield
     # Shutdown logic if needed
 
@@ -73,6 +80,10 @@ async def global_exception_handler(request: Request, exc: Exception):
 
 # Mount API Routes
 app.include_router(api_router, prefix=settings.API_V1_STR)
+
+# Decision support / analytics routes (from decision-support branch)
+for _router in (passport_router, analytics_router, copilot_router, export_router, integration_router):
+    app.include_router(_router)
 
 
 @app.get("/", tags=["System"])

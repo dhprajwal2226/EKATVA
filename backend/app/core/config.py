@@ -3,7 +3,7 @@ Centralized Configuration for Core AI Material Intelligence Engine.
 SIH 2026 - National Material Master Platform for CPSEs.
 """
 
-from typing import List
+from typing import List, Optional
 import os
 
 try:
@@ -21,6 +21,13 @@ try:
             description="Database connection string (PostgreSQL with pgvector in production, SQLite fallback)",
         )
         DB_ECHO: bool = False
+
+        # Decision support / analytics settings (from decision-support branch)
+        APP_ENV: str = "development"
+        LOG_LEVEL: str = "INFO"
+        JWT_SECRET: str = "secret"
+        LLM_API_KEY: Optional[str] = None
+        LLM_MODEL: str = "gemini-1.5-pro"
 
         # Hybrid Matching Weights
         SEMANTIC_WEIGHT: float = Field(default=0.30, description="Weight for vector semantic similarity (0.0 - 1.0)")
@@ -78,6 +85,12 @@ except ImportError:
 
         DATABASE_URL: str = os.getenv("DATABASE_URL", "sqlite:///./ekatva_materials.db")
         DB_ECHO: bool = os.getenv("DB_ECHO", "false").lower() == "true"
+
+        APP_ENV: str = os.getenv("APP_ENV", "development")
+        LOG_LEVEL: str = os.getenv("LOG_LEVEL", "INFO")
+        JWT_SECRET: str = os.getenv("JWT_SECRET", "secret")
+        LLM_API_KEY: Optional[str] = os.getenv("LLM_API_KEY")
+        LLM_MODEL: str = os.getenv("LLM_MODEL", "gemini-1.5-pro")
 
         SEMANTIC_WEIGHT: float = float(os.getenv("SEMANTIC_WEIGHT", "0.30"))
         FUZZY_WEIGHT: float = float(os.getenv("FUZZY_WEIGHT", "0.20"))
