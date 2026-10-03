@@ -9,6 +9,9 @@ from app.models.material_conflict import MaterialConflict
 from app.models.national_material import NationalMaterial
 from app.models.cpse_material_mapping import CPSEMaterialMapping
 from app.models.ingestion_job import IngestionJob
+from app.models.user import User
+from app.models.review import Review, ReviewHistory
+from app.models.audit_log import AuditLog
 
 __all__ = [
     "CPSE",
@@ -20,4 +23,8 @@ __all__ = [
     "NationalMaterial",
     "CPSEMaterialMapping",
     "IngestionJob",
+    "User",
+    "Review",
+    "ReviewHistory",
+    "AuditLog",
 ]

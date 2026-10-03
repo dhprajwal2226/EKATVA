@@ -26,6 +26,7 @@ try:
         APP_ENV: str = "development"
         LOG_LEVEL: str = "INFO"
         JWT_SECRET: str = "secret"
+        ACCESS_TOKEN_EXPIRE_MINUTES: int = 30
         LLM_API_KEY: Optional[str] = None
         LLM_MODEL: str = "gemini-1.5-pro"
 
@@ -89,6 +90,7 @@ except ImportError:
         APP_ENV: str = os.getenv("APP_ENV", "development")
         LOG_LEVEL: str = os.getenv("LOG_LEVEL", "INFO")
         JWT_SECRET: str = os.getenv("JWT_SECRET", "secret")
+        ACCESS_TOKEN_EXPIRE_MINUTES: int = int(os.getenv("ACCESS_TOKEN_EXPIRE_MINUTES", "30"))
         LLM_API_KEY: Optional[str] = os.getenv("LLM_API_KEY")
         LLM_MODEL: str = os.getenv("LLM_MODEL", "gemini-1.5-pro")
 
