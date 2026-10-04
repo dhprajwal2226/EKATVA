@@ -1,12 +1,64 @@
+import { useState } from 'react';
 import { useNavigate } from 'react-router-dom';
+import { useAuth } from '../context/AuthContext';
+
 import styles from './Login.module.css';
 
 const Login = () => {
   const navigate = useNavigate();
+  const { login } = useAuth();
+  const [email, setEmail] = useState('');
+  const [password, setPassword] = useState('');
+  const [error, setError] = useState('');
+  const [isLoading, setIsLoading] = useState(false);
 
-  const handleLogin = (e: React.FormEvent) => {
+  const handleLogin = async (e: React.FormEvent) => {
     e.preventDefault();
-    navigate('/overview');
+    setError('');
+    setIsLoading(true);
+
+    try {
+      // Create x-www-form-urlencoded data
+      const formData = new URLSearchParams();
+      formData.append('username', email);
+      formData.append('password', password);
+
+      const API_BASE_URL = import.meta.env.VITE_API_BASE_URL?.replace(/\/+$/, '') || 'http://localhost:8000';
+      const response = await fetch(`${API_BASE_URL}/v1/auth/login`, {
+        method: 'POST',
+        headers: {
+          'Content-Type': 'application/x-www-form-urlencoded',
+        },
+        body: formData.toString()
+      });
+
+      if (!response.ok) {
+        const errorData = await response.json();
+        throw new Error(errorData.detail || 'Login failed');
+      }
+
+      const data = await response.json();
+      
+      // We don't fetch user immediately, wait for context or fetch now
+      // Actually we should fetch /me to get user details to pass to context
+      const userResponse = await fetch(`${API_BASE_URL}/v1/auth/me`, {
+        headers: {
+          'Authorization': `Bearer ${data.access_token}`
+        }
+      });
+
+      if (!userResponse.ok) {
+        throw new Error('Failed to fetch user profile');
+      }
+
+      const userData = await userResponse.json();
+      login(data.access_token, userData);
+      navigate('/overview');
+    } catch (err: any) {
+      setError(err.message || 'An error occurred during login');
+    } finally {
+      setIsLoading(false);
+    }
   };
 
   return (
@@ -24,6 +76,8 @@ const Login = () => {
               type="text" 
               className={styles.input} 
               placeholder="Enter your official ID" 
+              value={email}
+              onChange={(e) => setEmail(e.target.value)}
               required 
             />
           </div>
@@ -34,6 +88,8 @@ const Login = () => {
               type="password" 
               className={styles.input} 
               placeholder="Enter your password" 
+              value={password}
+              onChange={(e) => setPassword(e.target.value)}
               required 
             />
           </div>
@@ -61,8 +117,10 @@ const Login = () => {
             </select>
           </div>
 
-          <button type="submit" className={styles.button}>
-            Secure Login
+          {error && <div className={styles.error} style={{ color: 'red', marginBottom: '16px', fontSize: '14px' }}>{error}</div>}
+
+          <button type="submit" className={styles.button} disabled={isLoading}>
+            {isLoading ? 'Authenticating...' : 'Secure Login'}
           </button>
         </form>
 

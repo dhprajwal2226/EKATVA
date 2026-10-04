@@ -1,14 +1,17 @@
 .container {
   display: flex;
   flex-direction: column;
-  height: 100%;
-  gap: var(--spacing-4);
+  gap: var(--spacing-6);
+  max-width: 1200px;
+  margin: 0 auto;
+  height: calc(100vh - 140px);
 }
 
 .header {
   display: flex;
   justify-content: space-between;
-  align-items: center;
+  align-items: flex-end;
+  margin-bottom: var(--spacing-2);
 }
 
 .titleGroup {
@@ -29,121 +32,64 @@
 }
 
 .mapContainer {
+  display: flex;
+  gap: var(--spacing-4);
+  flex: 1;
+  min-height: 500px;
+}
+
+.mapInner {
   flex: 1;
   background-color: var(--color-surface);
   border: 1px solid var(--color-border);
   border-radius: var(--radius-lg);
+  overflow: hidden;
+  box-shadow: var(--shadow-sm);
   position: relative;
-  overflow: hidden;
-  min-height: 600px;
 }
 
-.mapInner {
-  width: 100%;
-  height: 100%;
-}
-
-.sidebar {
+.emptyOverlay {
   position: absolute;
-  top: var(--spacing-4);
-  right: var(--spacing-4);
-  width: 320px;
-  background-color: var(--color-surface);
-  border: 1px solid var(--color-border);
-  border-radius: var(--radius-md);
-  box-shadow: var(--shadow-md);
-  padding: var(--spacing-4);
-  z-index: 1000;
-  max-height: calc(100% - 32px);
-  overflow-y: auto;
-}
-
-.sidebarTitle {
-  font-size: 1rem;
-  font-weight: 700;
-  color: var(--color-primary);
-  margin-bottom: var(--spacing-4);
-}
-
-.statsGrid {
-  display: grid;
-  grid-template-columns: 1fr 1fr;
-  gap: var(--spacing-3);
-  margin-bottom: var(--spacing-5);
-}
-
-.statCard {
-  background-color: var(--color-background);
-  padding: var(--spacing-3);
-  border-radius: var(--radius-sm);
-  border: 1px solid var(--color-border);
-  text-align: center;
-}
-
-.statValue {
-  font-size: 1.25rem;
-  font-weight: 700;
-  color: var(--color-primary);
-}
-
-.statLabel {
-  font-size: 0.7rem;
-  font-weight: 600;
-  color: var(--color-text-secondary);
-  text-transform: uppercase;
-  margin-top: 4px;
-}
-
-.sectionTitle {
-  font-size: 0.875rem;
-  font-weight: 700;
-  color: var(--color-text);
-  margin-bottom: var(--spacing-3);
-  padding-bottom: var(--spacing-2);
-  border-bottom: 1px solid var(--color-border);
-}
-
-.locationList {
-  display: flex;
-  flex-direction: column;
-  gap: var(--spacing-3);
-}
-
-.locationItem {
-  display: flex;
-  flex-direction: column;
-  gap: 4px;
-}
-
-.locName {
-  font-size: 0.875rem;
-  font-weight: 600;
-  color: var(--color-primary);
-}
-
-.locDetails {
-  display: flex;
-  justify-content: space-between;
-  font-size: 0.75rem;
-  color: var(--color-text-secondary);
-}
-
-.inventoryBar {
-  height: 6px;
-  background-color: var(--color-border);
-  border-radius: 3px;
-  overflow: hidden;
-  margin-top: 4px;
-}
-
-.inventoryFill {
-  height: 100%;
-  background-color: var(--color-info);
-}
-
-/* Fix leaflet z-index issues within our layout */
-:global(.leaflet-container) {
+  top: 0;
+  left: 0;
   width: 100%;
   height: 100%;
-  z-index: 1;
+  background-color: rgba(255, 255, 255, 0.8);
+  backdrop-filter: blur(2px);
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  z-index: 1000;
+}
+
+.emptyBox {
+  background-color: var(--color-surface);
+  border: 1px dashed var(--color-border);
+  border-radius: var(--radius-md);
+  padding: var(--spacing-6);
+  text-align: center;
+  max-width: 400px;
+  box-shadow: var(--shadow-md);
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+  gap: var(--spacing-3);
+}
+
+.emptyBox h2 {
+  font-size: 1.125rem;
+  color: var(--color-primary);
+  margin: 0;
+}
+
+.emptyBox p {
+  font-size: 0.875rem;
+  color: var(--color-text-secondary);
+  margin: 0;
+}
+
+.emptyIcon {
+  width: 32px;
+  height: 32px;
+  color: var(--color-danger);
 }

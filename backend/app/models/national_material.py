@@ -1,7 +1,7 @@
 """National Material Master Model (CNMC Identity)."""
 
 from datetime import datetime, timezone
-from sqlalchemy import Column, Integer, String, Text, DateTime, JSON
+from sqlalchemy import Column, Integer, String, Text, DateTime, JSON, ForeignKey
 from sqlalchemy.orm import relationship
 from app.db.database import Base
 

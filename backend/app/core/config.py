@@ -22,6 +22,12 @@ try:
         )
         DB_ECHO: bool = False
 
+        # CORS
+        CORS_ORIGINS: str = Field(
+            default="http://localhost:5173,http://localhost:5176,http://localhost:3000",
+            description="Comma separated list of allowed origins"
+        )
+
         # Decision support / analytics settings (from decision-support branch)
         APP_ENV: str = "development"
         LOG_LEVEL: str = "INFO"
@@ -86,6 +92,7 @@ except ImportError:
 
         DATABASE_URL: str = os.getenv("DATABASE_URL", "sqlite:///./ekatva_materials.db")
         DB_ECHO: bool = os.getenv("DB_ECHO", "false").lower() == "true"
+        CORS_ORIGINS: str = os.getenv("CORS_ORIGINS", "http://localhost:5173,http://localhost:5176,http://localhost:3000")
 
         APP_ENV: str = os.getenv("APP_ENV", "development")
         LOG_LEVEL: str = os.getenv("LOG_LEVEL", "INFO")

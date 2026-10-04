@@ -52,10 +52,12 @@ Core AI Material Intelligence Engine (SIH 2026)
     openapi_url="/openapi.json",
 )
 
+origins = [origin.strip() for origin in settings.CORS_ORIGINS.split(",") if origin.strip()]
+
 # CORS Middleware configuration
 app.add_middleware(
     CORSMiddleware,
-    allow_origins=["*"],
+    allow_origins=origins,
     allow_credentials=True,
     allow_methods=["*"],
     allow_headers=["*"],

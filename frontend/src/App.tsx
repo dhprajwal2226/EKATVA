@@ -1,4 +1,5 @@
 import { BrowserRouter, Routes, Route, Navigate } from 'react-router-dom';
+import { AuthProvider } from './context/AuthContext';
 import AppLayout from './layouts/AppLayout';
 import Login from './pages/Login';
 import Overview from './pages/Overview';
@@ -12,10 +13,27 @@ import MaterialGraph from './pages/MaterialGraph';
 import IntelligenceMap from './pages/IntelligenceMap';
 import Procurement from './pages/Procurement';
 import Passport from './pages/Passport';
+import Copilot from './pages/Copilot';
+import { useEffect } from 'react';
+import { getHealth } from './services/health';
 
 function App() {
+  useEffect(() => {
+    // Development-only health check to verify React -> API Client -> FastAPI -> Database
+    if (import.meta.env.DEV) {
+      getHealth()
+        .then(response => {
+          console.log('%c[EKATVA API Health Check] Success:', 'color: green; font-weight: bold;', response);
+        })
+        .catch(error => {
+          console.error('%c[EKATVA API Health Check] Failed:', 'color: red; font-weight: bold;', error);
+        });
+    }
+  }, []);
+
   return (
-    <BrowserRouter>
+    <AuthProvider>
+      <BrowserRouter>
       <Routes>
         <Route path="/login" element={<Login />} />
         
@@ -32,11 +50,13 @@ function App() {
           <Route path="map" element={<IntelligenceMap />} />
           <Route path="procurement" element={<Procurement />} />
           <Route path="passport" element={<Passport />} />
+          <Route path="copilot" element={<Copilot />} />
           {/* Add more routes here as we build them */}
           <Route path="*" element={<div style={{ padding: '24px' }}>Page under construction</div>} />
         </Route>
       </Routes>
     </BrowserRouter>
+    </AuthProvider>
   );
 }
 
