@@ -9,6 +9,8 @@ from app.api.matching import router as matching_router
 from app.api.conflicts import router as conflicts_router
 from app.api.classification import router as classification_router
 from app.api.cnmc import router as cnmc_router
+from app.api.auth import router as auth_router
+from app.api.review import router as review_router
 
 api_router = APIRouter()
 
@@ -20,5 +22,7 @@ api_router.include_router(matching_router)
 api_router.include_router(conflicts_router)
 api_router.include_router(classification_router)
 api_router.include_router(cnmc_router)
+api_router.include_router(auth_router)
+api_router.include_router(review_router)
 
 __all__ = ["api_router"]

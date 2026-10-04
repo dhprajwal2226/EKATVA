@@ -44,7 +44,7 @@ def seed_cpse_data(db: Session) -> None:
 
 def init_db() -> None:
     """Initialize all tables and populate initial seed data."""
-    Base.metadata.create_all(bind=engine)
+    # Schema creation is now handled exclusively by Alembic migrations
     db = SessionLocal()
     try:
         seed_cpse_data(db)

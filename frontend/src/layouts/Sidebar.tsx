@@ -15,7 +15,8 @@ import {
   BarChart3,
   History,
   Link,
-  Settings
+  Settings,
+  Bot
 } from 'lucide-react';
 import styles from './Sidebar.module.css';
 
@@ -31,6 +32,7 @@ const navItems = [
   { id: 'vendor', label: 'Vendor Intelligence', icon: Briefcase, path: '/vendor' },
   { id: 'procurement', label: 'Procurement Intelligence', icon: TrendingUp, path: '/procurement' },
   { id: 'passport', label: 'Material Passport', icon: FileCheck2, path: '/passport' },
+  { id: 'copilot', label: 'AI Copilot', icon: Bot, path: '/copilot' },
   { id: 'analytics', label: 'Analytics', icon: BarChart3, path: '/analytics' },
   { id: 'audit', label: 'Audit Trail', icon: History, path: '/audit' },
   { id: 'integration', label: 'ERP / SAP Integration', icon: Link, path: '/integration' },

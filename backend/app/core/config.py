@@ -22,10 +22,17 @@ try:
         )
         DB_ECHO: bool = False
 
+        # CORS
+        CORS_ORIGINS: str = Field(
+            default="http://localhost:5173,http://localhost:5176,http://localhost:3000",
+            description="Comma separated list of allowed origins"
+        )
+
         # Decision support / analytics settings (from decision-support branch)
         APP_ENV: str = "development"
         LOG_LEVEL: str = "INFO"
         JWT_SECRET: str = "secret"
+        ACCESS_TOKEN_EXPIRE_MINUTES: int = 30
         LLM_API_KEY: Optional[str] = None
         LLM_MODEL: str = "gemini-1.5-pro"
 
@@ -85,10 +92,12 @@ except ImportError:
 
         DATABASE_URL: str = os.getenv("DATABASE_URL", "sqlite:///./ekatva_materials.db")
         DB_ECHO: bool = os.getenv("DB_ECHO", "false").lower() == "true"
+        CORS_ORIGINS: str = os.getenv("CORS_ORIGINS", "http://localhost:5173,http://localhost:5176,http://localhost:3000")
 
         APP_ENV: str = os.getenv("APP_ENV", "development")
         LOG_LEVEL: str = os.getenv("LOG_LEVEL", "INFO")
         JWT_SECRET: str = os.getenv("JWT_SECRET", "secret")
+        ACCESS_TOKEN_EXPIRE_MINUTES: int = int(os.getenv("ACCESS_TOKEN_EXPIRE_MINUTES", "30"))
         LLM_API_KEY: Optional[str] = os.getenv("LLM_API_KEY")
         LLM_MODEL: str = os.getenv("LLM_MODEL", "gemini-1.5-pro")
 

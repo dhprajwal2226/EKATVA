@@ -1,45 +1,56 @@
 from sqlalchemy.orm import Session
+from app.models.national_material import NationalMaterial
 from app.models.mock_models import (
-    NationalMaterial, CpseMapping, MaterialAttribute,
     MaterialVendor, Inventory, Demand
 )
 from app.schemas.passport import MaterialPassportResponse
 
 def get_material_passport(db: Session, cnmc_id: str) -> MaterialPassportResponse:
-    material = db.query(NationalMaterial).filter(NationalMaterial.id == cnmc_id).first()
+    material = db.query(NationalMaterial).filter(NationalMaterial.cnmc == cnmc_id).first()
     if not material:
         return None
 
-    attributes = {attr.attribute_name: attr.attribute_value for attr in material.attributes}
+    attributes = material.canonical_attributes or {}
     
     cpse_mappings = [
-        {"cpse": mapping.cpse_name, "code": mapping.cpse_code}
+        {"cpse": mapping.cpse.name if mapping.cpse else "", "code": mapping.material_code}
         for mapping in material.cpse_mappings
     ]
 
+    from sqlalchemy.exc import OperationalError
+    try:
+        inventory_recs = db.query(Inventory).filter(Inventory.cnmc_id == cnmc_id).all()
+        demand_recs = db.query(Demand).filter(Demand.cnmc_id == cnmc_id).all()
+        vendors_recs = db.query(MaterialVendor).filter(MaterialVendor.cnmc_id == cnmc_id).all()
+    except OperationalError:
+        inventory_recs = []
+        demand_recs = []
+        vendors_recs = []
+        db.rollback()
+
     # Inventory calculation
-    total_inventory = sum(inv.total_quantity for inv in material.inventory)
-    total_reserved = sum(inv.reserved_quantity for inv in material.inventory)
+    total_inventory = sum(inv.total_quantity for inv in inventory_recs)
+    total_reserved = sum(inv.reserved_quantity for inv in inventory_recs)
     total_available = total_inventory - total_reserved
 
     # Vendor calculation
-    vendor_count = len(material.vendors)
+    vendor_count = len(vendors_recs)
     
     # Demand calculation
-    current_demand = sum(d.quantity for d in material.demand if d.demand_type == "CURRENT")
-    forecast_demand = sum(d.quantity for d in material.demand if d.demand_type == "FORECAST")
+    current_demand = sum(d.quantity for d in demand_recs if d.demand_type == "CURRENT")
+    forecast_demand = sum(d.quantity for d in demand_recs if d.demand_type == "FORECAST")
     total_demand_val = current_demand + forecast_demand
 
     # Intelligence calculation
-    if not material.inventory and not material.demand:
+    if not inventory_recs and not demand_recs:
         signal = "INSUFFICIENT_DATA"
         potential_gap = None
         potential_surplus = None
-    elif not material.inventory:
+    elif not inventory_recs:
         signal = "INSUFFICIENT_DATA"
         potential_gap = None
         potential_surplus = None
-    elif not material.demand:
+    elif not demand_recs:
         signal = "INSUFFICIENT_DATA"
         potential_gap = None
         potential_surplus = None
@@ -58,13 +69,13 @@ def get_material_passport(db: Session, cnmc_id: str) -> MaterialPassportResponse
             potential_surplus = 0
 
     # Graph summary
-    location_count = len(set(inv.location for inv in material.inventory))
+    location_count = len(set(inv.location for inv in inventory_recs))
     
     return MaterialPassportResponse(
-        cnmc=material.id,
+        cnmc=material.cnmc,
         status=material.status,
         identity={
-            "description": material.canonical_description,
+            "description": material.standard_description,
             "category": material.category
         },
         technical_attributes=attributes,

@@ -1,8 +1,36 @@
+import { useEffect, useState } from 'react';
 import { Database, Copy, CheckCircle, Network, TrendingUp } from 'lucide-react';
-import clsx from 'clsx';
 import styles from './Overview.module.css';
+import { getOverview } from '../services/analytics';
+import type { OverviewAnalyticsResponse } from '../types/api';
 
 const Overview = () => {
+  const [data, setData] = useState<OverviewAnalyticsResponse | null>(null);
+  const [loading, setLoading] = useState<boolean>(true);
+  const [error, setError] = useState<string | null>(null);
+
+  useEffect(() => {
+    getOverview()
+      .then(res => {
+        setData(res);
+        setLoading(false);
+      })
+      .catch(err => {
+        setError(err.message || 'Failed to load analytics data.');
+        setLoading(false);
+      });
+  }, []);
+
+  if (loading) {
+    return <div className={styles.overviewContainer} style={{ padding: '2rem' }}>Loading dashboard data...</div>;
+  }
+
+  if (error) {
+    return <div className={styles.overviewContainer} style={{ padding: '2rem', color: 'red' }}>Error: {error}</div>;
+  }
+
+  const hasData = data && data.national_materials > 0;
+
   return (
     <div className={styles.overviewContainer}>
       <div className={styles.header}>
@@ -16,10 +44,16 @@ const Overview = () => {
             <span>Total Material Records</span>
             <Database className={styles.kpiIcon} />
           </div>
-          <div className={styles.kpiValue}>24,860</div>
+          <div className={styles.kpiValue}>{data?.national_materials.toLocaleString() ?? 0}</div>
           <div className={styles.kpiFooter}>
-            <span className={styles.trendUp}><TrendingUp className={styles.trendIcon} /> 2.4%</span>
-            from last month
+            {hasData ? (
+              <>
+                <span className={styles.trendUp}><TrendingUp className={styles.trendIcon} /> 2.4%</span>
+                from last month
+              </>
+            ) : (
+              <span>No historical data available</span>
+            )}
           </div>
         </div>
 
@@ -28,10 +62,10 @@ const Overview = () => {
             <span>Potential Duplicates</span>
             <Copy className={styles.kpiIcon} />
           </div>
-          <div className={styles.kpiValue}>3,842</div>
+          {/* No direct backend equivalent for "Potential Duplicates" available, using empty state */}
+          <div className={styles.kpiValue}>-</div>
           <div className={styles.kpiFooter}>
-            <span className={styles.trendUp}><TrendingUp className={styles.trendIcon} /> 1.2%</span>
-            detected recently
+            <span>Data unavailable</span>
           </div>
         </div>
 
@@ -40,10 +74,16 @@ const Overview = () => {
             <span>CNMCs Generated</span>
             <CheckCircle className={styles.kpiIcon} />
           </div>
-          <div className={styles.kpiValue}>1,126</div>
+          <div className={styles.kpiValue}>{data?.active_materials.toLocaleString() ?? 0}</div>
           <div className={styles.kpiFooter}>
-            <span className={styles.trendUp}><TrendingUp className={styles.trendIcon} /> 5.8%</span>
-            approved
+            {hasData ? (
+              <>
+                <span className={styles.trendUp}><TrendingUp className={styles.trendIcon} /> 5.8%</span>
+                approved
+              </>
+            ) : (
+              <span>No historical data available</span>
+            )}
           </div>
         </div>
 
@@ -52,7 +92,7 @@ const Overview = () => {
             <span>CPSEs Connected</span>
             <Network className={styles.kpiIcon} />
           </div>
-          <div className={styles.kpiValue}>8</div>
+          <div className={styles.kpiValue}>{data?.cpse_count.toLocaleString() ?? 0}</div>
           <div className={styles.kpiFooter}>
             <span>Active integrations</span>
           </div>
@@ -65,48 +105,40 @@ const Overview = () => {
           <div className={styles.activityList}>
             <div className={styles.activityItem}>
               <span className={styles.activityLabel}>Identical Matches Detected</span>
-              <span className={styles.activityValue}>1,245</span>
+              <span className={styles.activityValue}>-</span>
             </div>
             <div className={styles.activityItem}>
               <span className={styles.activityLabel}>Near-Duplicates</span>
-              <span className={styles.activityValue}>843</span>
+              <span className={styles.activityValue}>-</span>
             </div>
             <div className={styles.activityItem}>
               <span className={styles.activityLabel}>Technical Conflicts Found</span>
-              <span className={styles.activityValue} style={{ color: 'var(--color-danger)' }}>112</span>
+              <span className={styles.activityValue}>-</span>
             </div>
             <div className={styles.activityItem}>
               <span className={styles.activityLabel}>Functionally Equivalent</span>
-              <span className={styles.activityValue}>450</span>
+              <span className={styles.activityValue}>-</span>
             </div>
           </div>
         </div>
 
         <div className={styles.sectionCard}>
           <h2 className={styles.sectionTitle}>Validation Queue</h2>
-          <div className={styles.queueList}>
-            <div className={clsx(styles.queueItem, styles.success)}>
-              <div className={styles.queueInfo}>
-                <span className={styles.queueTitle}>High Confidence Match (98%)</span>
-                <span className={styles.queueDesc}>IOCL-101 ↔ NTPC-P-782 (CS PIPE 10")</span>
+          {data?.pending_reviews ? (
+            <div className={styles.queueList}>
+              <div className={styles.queueItem}>
+                <div className={styles.queueInfo}>
+                  <span className={styles.queueTitle}>Pending Reviews</span>
+                  <span className={styles.queueDesc}>{data.pending_reviews} matches require expert validation.</span>
+                </div>
+                <button className={styles.queueAction}>Review</button>
               </div>
-              <button className={styles.queueAction}>Review</button>
             </div>
-            <div className={clsx(styles.queueItem, styles.critical)}>
-              <div className={styles.queueInfo}>
-                <span className={styles.queueTitle}>Critical Technical Conflict</span>
-                <span className={styles.queueDesc}>Grade Mismatch: SS304 vs SS316</span>
-              </div>
-              <button className={styles.queueAction}>Resolve</button>
+          ) : (
+            <div style={{ padding: '1rem', color: '#666', fontStyle: 'italic' }}>
+              Validation queue is empty.
             </div>
-            <div className={styles.queueItem}>
-              <div className={styles.queueInfo}>
-                <span className={styles.queueTitle}>Pending Expert Decision</span>
-                <span className={styles.queueDesc}>BHEL-PIPE-55 Manufacturer Review</span>
-              </div>
-              <button className={styles.queueAction}>Review</button>
-            </div>
-          </div>
+          )}
         </div>
       </div>
 
@@ -133,20 +165,9 @@ const Overview = () => {
             </thead>
             <tbody>
               <tr>
-                <td>CS SEAMLESS PIPE 10 IN SCH 40</td>
-                <td>IOCL, NTPC, BHEL</td>
-                <td>Identical</td>
-                <td><span className={clsx(styles.badge, styles.success)}>Approved</span></td>
-                <td>Reviewer A</td>
-                <td>Oct 12, 2026</td>
-              </tr>
-              <tr>
-                <td>SS VALVE 4 INCH 150#</td>
-                <td>IOCL, GAIL</td>
-                <td>Conflict</td>
-                <td><span className={clsx(styles.badge, styles.warning)}>Pending</span></td>
-                <td>Expert B</td>
-                <td>Oct 12, 2026</td>
+                <td colSpan={6} style={{ textAlign: 'center', padding: '2rem', color: '#666' }}>
+                  No recent decisions available.
+                </td>
               </tr>
             </tbody>
           </table>
