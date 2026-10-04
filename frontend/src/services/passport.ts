@@ -3,6 +3,6 @@ import type { MaterialPassportResponse } from '../types/api';
 
 export const passportService = {
   getPassport: async (cnmc: string): Promise<MaterialPassportResponse> => {
-    return await apiClient.get<MaterialPassportResponse>(`/v1/passport/${cnmc}`);
+    return await apiClient.get<MaterialPassportResponse>(`/api/v1/passport/${cnmc}`);
   }
 };

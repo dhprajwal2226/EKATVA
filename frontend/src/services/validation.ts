@@ -7,25 +7,25 @@ export const validationService = {
     if (status) params.append('status', status);
     if (priority) params.append('priority', priority);
     
-    return await apiClient.get<ReviewResponse[]>(`/v1/reviews/?${params.toString()}`);
+    return await apiClient.get<ReviewResponse[]>(`/api/v1/reviews/?${params.toString()}`);
   },
 
   getReview: async (id: number): Promise<ReviewDetailResponse> => {
-    return await apiClient.get<ReviewDetailResponse>(`/v1/reviews/${id}`);
+    return await apiClient.get<ReviewDetailResponse>(`/api/v1/reviews/${id}`);
   },
 
   approveReview: async (id: number, comment?: string): Promise<ReviewDetailResponse> => {
     const payload: ReviewActionRequest = { comment };
-    return await apiClient.post<ReviewDetailResponse>(`/v1/reviews/${id}/approve`, payload);
+    return await apiClient.post<ReviewDetailResponse>(`/api/v1/reviews/${id}/approve`, payload);
   },
 
   rejectReview: async (id: number, comment?: string): Promise<ReviewDetailResponse> => {
     const payload: ReviewActionRequest = { comment };
-    return await apiClient.post<ReviewDetailResponse>(`/v1/reviews/${id}/reject`, payload);
+    return await apiClient.post<ReviewDetailResponse>(`/api/v1/reviews/${id}/reject`, payload);
   },
 
   escalateReview: async (id: number, comment?: string, resolution?: string): Promise<ReviewDetailResponse> => {
     const payload: ReviewActionRequest = { comment, resolution };
-    return await apiClient.post<ReviewDetailResponse>(`/v1/reviews/${id}/escalate`, payload);
+    return await apiClient.post<ReviewDetailResponse>(`/api/v1/reviews/${id}/escalate`, payload);
   }
 };

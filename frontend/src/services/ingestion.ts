@@ -9,10 +9,10 @@ export const ingestionService = {
       formData.append('cpse', cpse);
     }
     
-    return await apiClient.post<IngestionUploadResponse>('/v1/ingestion/upload', formData);
+    return await apiClient.post<IngestionUploadResponse>('/api/ingestion/upload', formData);
   },
 
   getJob: async (jobId: string): Promise<IngestionJobResponse> => {
-    return await apiClient.get<IngestionJobResponse>(`/v1/ingestion/jobs/${jobId}`);
+    return await apiClient.get<IngestionJobResponse>(`/api/ingestion/jobs/${jobId}`);
   }
 };

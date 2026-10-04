@@ -19,10 +19,10 @@ export const matchingService = {
         }
       });
     }
-    return apiClient.get<PaginatedMatchesResponse>('/matching', { params: queryParams });
+    return apiClient.get<PaginatedMatchesResponse>('/api/matching', { params: queryParams });
   },
   
   getMatchDetail: async (id: number): Promise<MatchResponse> => {
-    return apiClient.get<MatchResponse>(`/matching/${id}`);
+    return apiClient.get<MatchResponse>(`/api/matching/${id}`);
   }
 };
