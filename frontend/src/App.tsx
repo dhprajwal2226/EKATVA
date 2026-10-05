@@ -1,5 +1,6 @@
 import { BrowserRouter, Routes, Route, Navigate } from 'react-router-dom';
 import { AuthProvider } from './context/AuthContext';
+import ProtectedRoute from './components/ProtectedRoute';
 import AppLayout from './layouts/AppLayout';
 import Login from './pages/Login';
 import Overview from './pages/Overview';
@@ -34,28 +35,29 @@ function App() {
   return (
     <AuthProvider>
       <BrowserRouter>
-      <Routes>
-        <Route path="/login" element={<Login />} />
-        
-        <Route path="/" element={<AppLayout />}>
-          <Route index element={<Navigate to="/overview" replace />} />
-          <Route path="overview" element={<Overview />} />
-          <Route path="ingestion" element={<Ingestion />} />
-          <Route path="dna" element={<MaterialDNA />} />
-          <Route path="matching" element={<AIMatching />} />
-          <Route path="validation" element={<Validation />} />
-          <Route path="master" element={<NationalMaster />} />
-          <Route path="normalization" element={<Normalization />} />
-          <Route path="graph" element={<MaterialGraph />} />
-          <Route path="map" element={<IntelligenceMap />} />
-          <Route path="procurement" element={<Procurement />} />
-          <Route path="passport" element={<Passport />} />
-          <Route path="copilot" element={<Copilot />} />
-          {/* Add more routes here as we build them */}
-          <Route path="*" element={<div style={{ padding: '24px' }}>Page under construction</div>} />
-        </Route>
-      </Routes>
-    </BrowserRouter>
+        <Routes>
+          <Route path="/login" element={<Login />} />
+
+          <Route element={<ProtectedRoute />}>
+            <Route path="/" element={<AppLayout />}>
+              <Route index element={<Navigate to="/overview" replace />} />
+              <Route path="overview" element={<Overview />} />
+              <Route path="ingestion" element={<Ingestion />} />
+              <Route path="dna" element={<MaterialDNA />} />
+              <Route path="matching" element={<AIMatching />} />
+              <Route path="validation" element={<Validation />} />
+              <Route path="master" element={<NationalMaster />} />
+              <Route path="normalization" element={<Normalization />} />
+              <Route path="graph" element={<MaterialGraph />} />
+              <Route path="map" element={<IntelligenceMap />} />
+              <Route path="procurement" element={<Procurement />} />
+              <Route path="passport" element={<Passport />} />
+              <Route path="copilot" element={<Copilot />} />
+              <Route path="*" element={<div style={{ padding: '24px' }}>Page under construction</div>} />
+            </Route>
+          </Route>
+        </Routes>
+      </BrowserRouter>
     </AuthProvider>
   );
 }
