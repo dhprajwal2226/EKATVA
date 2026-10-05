@@ -4,13 +4,26 @@ import { useAuth } from '../context/AuthContext';
 
 import styles from './Login.module.css';
 
+const DEMO_EMAIL = 'reviewer@ekatva.demo';
+const DEMO_PASSWORD = 'Demo@12345';
+
 const Login = () => {
   const navigate = useNavigate();
   const { login } = useAuth();
   const [email, setEmail] = useState('');
   const [password, setPassword] = useState('');
+  const [cpse, setCpse] = useState('');
+  const [role, setRole] = useState('admin');
   const [error, setError] = useState('');
   const [isLoading, setIsLoading] = useState(false);
+
+  const fillDemo = () => {
+    setEmail(DEMO_EMAIL);
+    setPassword(DEMO_PASSWORD);
+    setCpse('ministry');
+    setRole('reviewer');
+    setError('');
+  };
 
   const handleLogin = async (e: React.FormEvent) => {
     e.preventDefault();
@@ -38,9 +51,7 @@ const Login = () => {
       }
 
       const data = await response.json();
-      
-      // We don't fetch user immediately, wait for context or fetch now
-      // Actually we should fetch /me to get user details to pass to context
+
       const userResponse = await fetch(`${API_BASE_URL}/api/v1/auth/me`, {
         headers: {
           'Authorization': `Bearer ${data.access_token}`
@@ -69,34 +80,75 @@ const Login = () => {
           <p className={styles.subtitle}>AI-powered material harmonization across CPSEs</p>
         </div>
 
+        <div
+          style={{
+            border: '1px dashed #3b82f6',
+            background: 'rgba(59, 130, 246, 0.08)',
+            borderRadius: '8px',
+            padding: '12px 14px',
+            marginBottom: '20px',
+            fontSize: '13px',
+            lineHeight: 1.5,
+          }}
+        >
+          <div style={{ fontWeight: 600, marginBottom: '6px' }}>Demo access for evaluators</div>
+          <div>Email: <code>{DEMO_EMAIL}</code></div>
+          <div>Password: <code>{DEMO_PASSWORD}</code></div>
+          <button
+            type="button"
+            onClick={fillDemo}
+            style={{
+              marginTop: '10px',
+              padding: '6px 12px',
+              fontSize: '13px',
+              cursor: 'pointer',
+              borderRadius: '6px',
+              border: '1px solid #3b82f6',
+              background: 'transparent',
+              color: '#3b82f6',
+              fontWeight: 600,
+            }}
+          >
+            Fill demo credentials
+          </button>
+          <div style={{ marginTop: '8px', opacity: 0.75 }}>
+            The first login may take up to a minute while the server wakes up.
+          </div>
+        </div>
+
         <form onSubmit={handleLogin}>
           <div className={styles.formGroup}>
             <label className={styles.label}>Official ID / Email</label>
-            <input 
-              type="text" 
-              className={styles.input} 
-              placeholder="Enter your official ID" 
+            <input
+              type="text"
+              className={styles.input}
+              placeholder="Enter your official ID"
               value={email}
               onChange={(e) => setEmail(e.target.value)}
-              required 
+              required
             />
           </div>
 
           <div className={styles.formGroup}>
             <label className={styles.label}>Password</label>
-            <input 
-              type="password" 
-              className={styles.input} 
-              placeholder="Enter your password" 
+            <input
+              type="password"
+              className={styles.input}
+              placeholder="Enter your password"
               value={password}
               onChange={(e) => setPassword(e.target.value)}
-              required 
+              required
             />
           </div>
 
           <div className={styles.formGroup}>
             <label className={styles.label}>CPSE / Organization</label>
-            <select className={styles.select} required defaultValue="">
+            <select
+              className={styles.select}
+              required
+              value={cpse}
+              onChange={(e) => setCpse(e.target.value)}
+            >
               <option value="" disabled>Select your organization</option>
               <option value="iocl">IOCL - Indian Oil Corporation Limited</option>
               <option value="ntpc">NTPC Limited</option>
@@ -105,10 +157,15 @@ const Login = () => {
               <option value="ministry">Ministry of Steel</option>
             </select>
           </div>
-          
+
           <div className={styles.formGroup}>
             <label className={styles.label}>Role</label>
-            <select className={styles.select} required defaultValue="admin">
+            <select
+              className={styles.select}
+              required
+              value={role}
+              onChange={(e) => setRole(e.target.value)}
+            >
               <option value="admin">Administrator</option>
               <option value="expert">Material Expert</option>
               <option value="reviewer">Reviewer</option>
