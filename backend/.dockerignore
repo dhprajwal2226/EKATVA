@@ -1,0 +1,7 @@
+venv/
+__pycache__/
+*.pyc
+.env
+tests/
+ekatva_materials_backup*.db
+ekatva_materials_old.db
