@@ -213,6 +213,10 @@ class MatchingService:
                     "standard": tgt.attributes.standard if tgt.attributes else None,
                 }
 
+                for _d, _m in ((src_attr_dict, src), (tgt_attr_dict, tgt)):
+                    _x = (_m.attributes.other_attributes or {}) if _m.attributes else {}
+                    _d.update({k: v for k, v in _x.items() if k not in ("confidence_scores", "overall_confidence", "fingerprint_hash")})
+
                 src_vec = src.embedding.embedding if src.embedding else None
                 tgt_vec = tgt.embedding.embedding if tgt.embedding else None
 

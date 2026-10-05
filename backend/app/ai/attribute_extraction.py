@@ -2,6 +2,12 @@
 Deterministic Technical Attribute Extraction Engine (Material DNA).
 Extracts structured engineering properties and computes confidence metrics.
 SIH 2026 - National Material Master Platform.
+
+Changes vs. previous version (all existing keys are kept):
+- New keys: section, power_kw, voltage, rpm, phases, cores, cross_section_sqmm,
+  conductor, pipe_class, valve_type, manufacturing_method, head_type.
+- Structural sections (ISMC 150 X 75, ISA 50X50X6...) are stored in `section`
+  and are no longer mislabelled as a pipe-style "diameter".
 """
 
 import re
@@ -99,6 +105,48 @@ FORMS = {
     "FLAT": ["FLAT"],
 }
 
+# Forms that describe how the item was manufactured
+MANUFACTURING_FORMS = {"SEAMLESS", "WELDED", "FORGED", "CAST"}
+
+VALVE_TYPE_PATTERN = (
+    r"\b(BALL|GATE|GLOBE|CHECK|BUTTERFLY|PLUG|NEEDLE|CONTROL)\s+VALVE\b"
+)
+
+HEAD_TYPE_PATTERN = (
+    r"\b(HEXAGONAL|HEX|SOCKET\s*HEAD|ALLEN|COUNTERSUNK|CSK|BUTTON)\b"
+)
+
+# Structural sections: ISMC 150 X 75, ISMB 200, ISA 50 X 50 X 6 ...
+SECTION_PATTERN = (
+    r"\b(ISMC|ISMB|ISLB|ISWB|ISJB|ISHB|ISMT|ISA)\s*(\d+(?:\.\d+)?)"
+    r"(?:\s*[X*]\s*(\d+(?:\.\d+)?)(?:\s*[X*]\s*(\d+(?:\.\d+)?))?)?"
+)
+
+ELECTRICAL_TYPES = {"Motor", "Pump", "Cable"}
+
+
+def _find(pattern: str, *texts: str):
+    """Search each text in order; return the first match."""
+    for text in texts:
+        if not text:
+            continue
+        match = re.search(pattern, text, re.IGNORECASE)
+        if match:
+            return match
+    return None
+
+
+def _num(value: str) -> Optional[float]:
+    try:
+        return float(value)
+    except (ValueError, TypeError):
+        return None
+
+
+def _clean_number(value: float) -> Any:
+    """15.0 -> 15, 1.5 -> 1.5 (keeps dict values tidy)."""
+    return int(value) if float(value).is_integer() else value
+
 
 def extract_attributes(raw_description: str) -> Dict[str, Any]:
     """
@@ -107,6 +155,7 @@ def extract_attributes(raw_description: str) -> Dict[str, Any]:
     along with confidence values and extraction sources.
     """
     normalized = normalize_description(raw_description)
+    raw_upper = (raw_description or "").upper()
     extracted: Dict[str, Any] = {
         "material_type": None,
         "material": None,
@@ -123,6 +172,19 @@ def extract_attributes(raw_description: str) -> Dict[str, Any]:
         "standard": None,
         "application": None,
         "manufacturer": None,
+        # --- new technical attributes ---
+        "section": None,
+        "power_kw": None,
+        "voltage": None,
+        "rpm": None,
+        "phases": None,
+        "cores": None,
+        "cross_section_sqmm": None,
+        "conductor": None,
+        "pipe_class": None,
+        "valve_type": None,
+        "manufacturing_method": None,
+        "head_type": None,
         "confidence_scores": {},
         "raw_attributes": {},
     }
@@ -202,9 +264,36 @@ def extract_attributes(raw_description: str) -> Dict[str, Any]:
         if extracted["form"]:
             break
 
+    # 7b. Manufacturing method (Seamless / Welded / Forged / Cast) - comparable spec
+    for form_name in MANUFACTURING_FORMS:
+        for kw in FORMS[form_name]:
+            if re.search(r"\b" + re.escape(kw) + r"\b", normalized, re.IGNORECASE):
+                extracted["manufacturing_method"] = form_name
+                extracted["confidence_scores"]["manufacturing_method"] = 0.90
+                break
+        if extracted["manufacturing_method"]:
+            break
+
+    # 7c. Structural section (ISMC 150 X 75, ISA 50 X 50 X 6 ...)
+    dims_locked = False
+    section_match = _find(SECTION_PATTERN, raw_upper, normalized)
+    if section_match:
+        designation = section_match.group(1).upper()
+        parts = [p for p in section_match.groups()[1:] if p]
+        label = "X".join(str(_clean_number(float(p))) for p in parts)
+        extracted["section"] = f"{designation} {label}"
+        extracted["size"] = extracted["section"]
+        extracted["confidence_scores"]["section"] = 0.97
+        dims_locked = True  # section dimensions are not a pipe-style diameter
+        if not extracted["material_type"]:
+            extracted["material_type"] = "Beam"
+            extracted["confidence_scores"]["material_type"] = 0.90
+
     # 8. Extract Dimensions (Size, Diameter, Length, Thickness)
     # Check Metric Bolt pattern: M16 X 50
-    metric_bolt_match = re.search(r"\bM(\d+)\s*X\s*(\d+(?:\.\d+)?)\b", normalized, re.IGNORECASE)
+    metric_bolt_match = None if dims_locked else re.search(
+        r"\bM(\d+)\s*X\s*(\d+(?:\.\d+)?)\b", normalized, re.IGNORECASE
+    )
     if metric_bolt_match:
         dia_mm = float(metric_bolt_match.group(1))
         len_mm = float(metric_bolt_match.group(2))
@@ -217,7 +306,7 @@ def extract_attributes(raw_description: str) -> Dict[str, Any]:
             extracted["material_type"] = "Fastener"
 
     # Check Inch Size (e.g. 10 INCH, 4 INCH, 1/2 INCH)
-    if extracted["diameter"] is None:
+    if extracted["diameter"] is None and not dims_locked:
         inch_match = re.search(
             r"\b(\d+(?:\.\d+)?|\d+/\d+)\s*(?:INCH(?:ES)?|IN|\"|”)\b",
             raw_description,
@@ -239,7 +328,7 @@ def extract_attributes(raw_description: str) -> Dict[str, Any]:
                 pass
 
     # Check Metric Diameter / Millimeters (e.g. 254 MM, 100 MM)
-    if extracted["diameter"] is None:
+    if extracted["diameter"] is None and not dims_locked:
         mm_match = re.search(r"\b(\d+(?:\.\d+)?)\s*MM\b", normalized, re.IGNORECASE)
         if mm_match:
             extracted["diameter"] = float(mm_match.group(1))
@@ -247,7 +336,7 @@ def extract_attributes(raw_description: str) -> Dict[str, Any]:
             extracted["confidence_scores"]["diameter"] = 0.95
 
     # Check Nominal Bore / DN
-    if extracted["diameter"] is None:
+    if extracted["diameter"] is None and not dims_locked:
         dn_match = re.search(r"\b(?:DN|NB)\s*(\d+)\b", normalized, re.IGNORECASE)
         if dn_match:
             dn_val = float(dn_match.group(1))
@@ -261,6 +350,106 @@ def extract_attributes(raw_description: str) -> Dict[str, Any]:
         thk_val = thk_match.group(1) or thk_match.group(2)
         extracted["thickness"] = float(thk_val)
         extracted["confidence_scores"]["thickness"] = 0.95
+
+    # 9. Electrical / rotating equipment: power, voltage, phases, speed
+    power_match = _find(r"\b(\d+(?:\.\d+)?)\s*KW\b", raw_upper, normalized)
+    if power_match:
+        extracted["power_kw"] = _clean_number(float(power_match.group(1)))
+        extracted["confidence_scores"]["power_kw"] = 0.98
+    else:
+        hp_match = _find(r"\b(\d+(?:\.\d+)?)\s*HP\b", raw_upper, normalized)
+        if hp_match:
+            extracted["power_kw"] = round(float(hp_match.group(1)) * 0.7457, 2)
+            extracted["confidence_scores"]["power_kw"] = 0.90
+
+    electrical = (
+        extracted["material_type"] in ELECTRICAL_TYPES or extracted["power_kw"] is not None
+    )
+
+    if electrical:
+        volt_match = _find(r"\b(\d+(?:\.\d+)?)\s*(KV|V)\b", raw_upper, normalized)
+        if volt_match:
+            volts = float(volt_match.group(1))
+            if volt_match.group(2).upper() == "KV":
+                volts *= 1000
+            extracted["voltage"] = _clean_number(round(volts, 1))
+            extracted["confidence_scores"]["voltage"] = 0.97
+
+        phase_match = _find(r"\b(\d)\s*(?:PHASE|PH)\b", raw_upper, normalized)
+        if phase_match:
+            extracted["phases"] = int(phase_match.group(1))
+            extracted["confidence_scores"]["phases"] = 0.95
+
+        rpm_match = _find(r"\b(\d{3,5})\s*RPM\b", raw_upper, normalized)
+        if rpm_match:
+            extracted["rpm"] = int(rpm_match.group(1))
+            extracted["confidence_scores"]["rpm"] = 0.95
+
+    # 10. Cables: cores x cross-section, conductor
+    cable_match = _find(
+        r"\b(\d+(?:\.\d+)?)\s*C\s*[X*]\s*(\d+(?:\.\d+)?)\s*(?:SQ\.?\s*MM|SQMM|MM2|MM²)",
+        raw_upper,
+        normalized,
+    )
+    if cable_match:
+        extracted["cores"] = _clean_number(float(cable_match.group(1)))
+        extracted["cross_section_sqmm"] = _clean_number(float(cable_match.group(2)))
+        extracted["confidence_scores"]["cores"] = 0.97
+        extracted["confidence_scores"]["cross_section_sqmm"] = 0.97
+    else:
+        area_match = _find(r"\b(\d+(?:\.\d+)?)\s*(?:SQ\.?\s*MM|SQMM|MM2|MM²)", raw_upper, normalized)
+        if area_match:
+            extracted["cross_section_sqmm"] = _clean_number(float(area_match.group(1)))
+            extracted["confidence_scores"]["cross_section_sqmm"] = 0.95
+
+    if extracted["material_type"] == "Cable":
+        cond_match = _find(r"\b(COPPER|CU|ALUMINIUM|ALUMINUM|AL)\b", raw_upper, normalized)
+        if cond_match:
+            word = cond_match.group(1).upper()
+            extracted["conductor"] = (
+                "COPPER" if word in ("COPPER", "CU") else "ALUMINIUM"
+            )
+            extracted["confidence_scores"]["conductor"] = 0.95
+
+    # 11. Pipe class: DI K7/K9, GI class A/B/C (LIGHT/MEDIUM/HEAVY)
+    class_match = _find(r"\bCLASS\s*(K\s*\d+)\b|\b(K\s*\d)\b", raw_upper, normalized)
+    if class_match:
+        code = next(g for g in class_match.groups() if g)
+        extracted["pipe_class"] = re.sub(r"\s+", "", code).upper()
+        extracted["confidence_scores"]["pipe_class"] = 0.97
+    elif extracted["material_type"] == "Pipe":
+        letter_match = _find(r"\bCLASS\s*([ABC])\b", raw_upper, normalized)
+        if letter_match:
+            extracted["pipe_class"] = letter_match.group(1).upper()
+            extracted["confidence_scores"]["pipe_class"] = 0.95
+        elif _find(r"\bIS\s*1239\b", raw_upper, normalized):
+            weight_match = _find(r"\b(LIGHT|MEDIUM|HEAVY)\b", raw_upper, normalized)
+            if weight_match:
+                extracted["pipe_class"] = {
+                    "LIGHT": "A", "MEDIUM": "B", "HEAVY": "C"
+                }[weight_match.group(1).upper()]
+                extracted["confidence_scores"]["pipe_class"] = 0.90
+
+    # 12. Valve type (ball / gate / globe ...)
+    if extracted["material_type"] == "Valve":
+        valve_match = _find(VALVE_TYPE_PATTERN, raw_upper, normalized)
+        if valve_match:
+            extracted["valve_type"] = valve_match.group(1).upper()
+            extracted["confidence_scores"]["valve_type"] = 0.97
+
+    # 13. Fastener head type (hex / socket / countersunk ...)
+    if extracted["material_type"] == "Fastener":
+        head_match = _find(HEAD_TYPE_PATTERN, raw_upper, normalized)
+        if head_match:
+            head = re.sub(r"\s+", " ", head_match.group(1).upper())
+            if head in ("HEXAGONAL", "HEX"):
+                head = "HEX"
+            elif head in ("CSK", "COUNTERSUNK"):
+                head = "COUNTERSUNK"
+            elif head in ("SOCKET HEAD", "SOCKETHEAD", "ALLEN"):
+                head = "SOCKET"
+            extracted["head_type"] = head
+            extracted["confidence_scores"]["head_type"] = 0.95
 
     # Record overall confidence
     confidences = list(extracted["confidence_scores"].values())

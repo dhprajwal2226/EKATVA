@@ -70,6 +70,7 @@ class MaterialDNAService:
         attr.application = dna.get("application")
         attr.manufacturer = dna.get("manufacturer")
         attr.other_attributes = {
+            **{k: dna[k] for k in ("section","power_kw","voltage","rpm","phases","cores","cross_section_sqmm","conductor","pipe_class","valve_type","manufacturing_method","head_type") if dna.get(k) is not None},
             "confidence_scores": dna.get("confidence_scores", {}),
             "overall_confidence": dna.get("overall_confidence", 0.5),
             "fingerprint_hash": MaterialDNAService.compute_dna_fingerprint(dna),
